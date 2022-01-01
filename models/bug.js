@@ -9,25 +9,25 @@ var bugSchema = new Schema({
     //newfield
     bugStatus: {
         type: String,
-        require: true,
+        // require: true,
     },
     bugDescription: {
         type: String,
-        require: true,
+        // require: true,
     },
     bugSeverity: {
         type: String,
-        require: true,
+        // require: true,
     },    
     //newfield
     bugPriority: {
         type: String,
-        require: true,
+        // require: true,
     },
     //bugDueDate
     bugDueDate: {
         type: Date,
-        require: true,
+        // require: true,
     },
     // comments: {
     //     type: Array, 

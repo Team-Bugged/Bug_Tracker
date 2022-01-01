@@ -4,6 +4,7 @@ var jwt = require('jwt-simple')
 var config = require('../config/dbconfig')
 const { db } = require('../models/user')
 var Bug = require('../models/bug')
+var Project = require('../models/project')
 
 var functions = {
     addNew: function (req, res) {
@@ -47,7 +48,7 @@ var functions = {
             else {
                 user.comparePassword(req.body.password, function(err, isMatch) {
                     if (isMatch && !err) {
-                        var token = jwt.encode(user, config.secret)
+                        var token = jwt.encode(user._id, config.secret)
                         res.json({success: true, token: token})
                     }
                     else {
@@ -62,55 +63,75 @@ var functions = {
         if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
             var token = req.headers.authorization.split(' ')[1]
             var decodedtoken = jwt.decode(token, config.secret)
-            return res.json({success: true, msg: decodedtoken.usn, email: decodedtoken.email})
+            return res.json({success: true, msg: decodedtoken})
         }
         else {
             return res.json({success: false, msg: 'No headers'})
         }
     },
     addproject: function(req, res) {
-        if ((!req.body.projectTitle) || (!req.body.projectDescription)) {
-            res.json({success: false, msg: 'Enter all fields'})
+        let userID;
+        if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
+            var token = req.headers.authorization.split(' ')[1]
+            userID = jwt.decode(token, config.secret)
         }
-        else {
-            var newProject = Project({
+        // if ((!req.body.projectTitle) || (!req.body.projectDescription) || (!req.body.projectStartDate) || (!req.body.projectOwner) || (!req.body.projectStatus)) {
+        //     res.json({success: false, msg: 'Enter all fields'})
+        // }
+        // else {
+            let newProject = Project({
                 projectTitle: req.body.projectTitle,
                 projectDescription: req.body.projectDescription,
+                projectStartDate: req.body.projectStartDate,
+                projectOwner: userID,
+                projectStatus: req.body.projectStatus,
             });
-            newProject.save(function (err, newProject) {
+            newProject.save(function (err, savedProject) {
                 if (err) {
                     console.log(err)
                     res.json({success: false, msg: 'Failed to save'})
                 }
                 else {
-                    res.json({success: true, msg: 'Successfully Saved'})
+                    User.findOneAndUpdate({_id: userID},{$push: {projects: savedProject._id}}, (err,user)=>{
+                        if(err){
+                            res.send(err);
+                        }
+                        // user.projects.append[savedProject._id];
+                        res.json({projectDetail: savedProject, userDetail: user})
+                    })
                 }
             })
-        }
+        // }
     },
     addbug: function(req, res) {
-        if ((!req.body.bugTitle) || (!req.body.bugDescription) || (!req.body.bugSeverity) || (!req.body.bugDueDate)) {
-            res.json({success: false, msg: 'Enter all fields'})
-        }
-        else {
-            var newBug = Bug({
+        // if ((!req.body.bugTitle) || (!req.body.bugDescription) || (!req.body.bugSeverity) || (!req.body.bugDueDate)) {
+        //     res.json({success: false, msg: 'Enter all fields'})
+        // }
+        // else {
+            let projectID = req.body.projectID;
+            let newBug = Bug({
                 bugTitle: req.body.bugTitle,
                 bugDescription: req.body.bugDescription,
                 bugSeverity: req.body.bugSeverity,
                 bugDueDate: req.body.bugDueDate,
-                comments: req.body.comments,
-                reviews: req.body.reviews,
+                // comments: req.body.comments,
             });
-            newBug.save(function (err, newBug) {
+            newBug.save(function (err, savedBug) {
                 if (err) {
                     console.log(err)
                     res.json({success: false, msg: 'Failed to save'})
                 }
                 else {
-                    res.json({success: true, msg: 'Successfully Saved'})
+                    Project.findOneAndUpdate({_id: projectID},{$push: {bugs: savedBug._id}}, (err,project)=>{
+                        if(err){
+                            res.send(err);
+                        }
+                        // user.projects.append[savedProject._id];
+                        res.json({projectDetail: project, bugDetail: savedBug})
+                    })
                 }
             })
-        }
+        // }
     }
 }
 

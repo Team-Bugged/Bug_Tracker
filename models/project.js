@@ -26,10 +26,9 @@ var projectSchema = new Schema({
         type: String, 
         require: true,
     },
-    // bugs: {
-    //     type: Array, 
-    //     require: true,
-    // },
+    bugs: {
+        type: Array,
+    },
 })
 
 projectSchema.pre('save', function(next) {

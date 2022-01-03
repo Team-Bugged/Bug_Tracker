@@ -1,34 +1,33 @@
-const express = require('express')
-const actions = require('../methods/actions')
-const router = express.Router()
+const express = require("express");
+const actions = require("../methods/actions");
+const router = express.Router();
 
-router.get('/', (req, res) => {
-    res.send('Hello World')
-})
+router.get("/", (req, res) => {
+  res.send("Hello World");
+});
 
-router.get('/dashboard', (req, res) => {
-    res.send('dashboard')
-})
-
+router.get("/dashboard", (req, res) => {
+  res.send("dashboard");
+});
 
 //@desc Adding new user
-//@route POST /adduser
-router.post('/adduser', actions.addNew)
+//@route POST /signup
+router.post("/signup", actions.signUp);
 
 //@desc Authenticating user
-//@route POST /authenticate
-router.post('/authenticate', actions.authenticate)
+//@route POST /login
+router.post("/login", actions.login);
 
 //@desc Get info on a user
 //@route GET /getinfo
-router.get('/getinfo', actions.getinfo)
+router.get("/getinfo", actions.getInfo);
 
 //@desc Adding new project
 //@route POST /addproject
-router.post('/addproject', actions.addproject)
+router.post("/addproject", actions.addProject);
 
 //@desc Adding new bug
 //@route POST /addbug
-router.post('/addbug', actions.addbug)
+router.post("/addbug", actions.addBug);
 
-module.exports = router
+module.exports = router;

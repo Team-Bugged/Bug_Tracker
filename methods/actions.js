@@ -8,6 +8,7 @@ const signUp = (req, res) => {
     res.json({ success: false, msg: "Enter all fields" });
   } else {
     var newUser = User({
+      userName: req.body.name,
       email: req.body.email,
       password: req.body.password,
     });
@@ -19,15 +20,16 @@ const signUp = (req, res) => {
         if (err) throw err;
         if (user) {
           res.status(403).send({ success: false, msg: "User exists" });
+        } else {
+          newUser.save(function (err, newUser) {
+            if (err) {
+              console.log(err);
+              res.json({ success: false, msg: "Failed to save" });
+            } else {
+              res.json({ success: true, msg: "Successfully Saved" });
+            }
+          });
         }
-        newUser.save(function (err, newUser) {
-          if (err) {
-            console.log(err);
-            res.json({ success: false, msg: "Failed to save" });
-          } else {
-            res.json({ success: true, msg: "Successfully Saved" });
-          }
-        });
       }
     );
   }

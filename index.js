@@ -7,8 +7,10 @@ require("dotenv").config();
 
 const app = express();
 const port = process.env.PORT;
-connectDB();
 app.use(cors());
+
+connectDB();
+
 app.use(
   express.urlencoded({
     extended: false,

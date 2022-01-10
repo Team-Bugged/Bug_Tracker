@@ -25,6 +25,9 @@ var bugSchema = new Schema({
     type: Date,
     require: true,
   },
+  assignedTo: {
+    type: Array,
+  }
   // comments: {
   //     type: Array,
   // },

@@ -136,4 +136,34 @@ const addBug = (req, res) => {
   });
 };
 
-module.exports = { signUp, login, addProject, addBug, getInfo };
+const assignBug = (req, res) => {
+  let bugID = req.body.bugID;
+  assignedTo = req.body.assignedTo;
+  let bd;
+  Bug.findOneAndUpdate(
+    { _id: bugID },
+    { $push: { assignedTo: assignedTo } },
+    (err, bugs) => {
+      if (err) {
+        // res.send(err);
+        bd = err;
+      } else {
+        // res.json({ bugDetail: bugs });
+        bd = { bugDetail: bugs };
+      }
+    }
+  );
+  User.findOneAndUpdate(
+    { _id: assignedTo },
+    { $push: { bugs: bugID } },
+    (err, users) => {
+      if (err) {
+        res.send(err);
+      } else {
+        res.json({ userdetail: users, ...bd });
+      }
+    }
+  );
+};
+
+module.exports = { signUp, login, addProject, addBug, getInfo, assignBug };

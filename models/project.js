@@ -24,6 +24,9 @@ var projectSchema = new Schema({
   bugs: {
     type: Array,
   },
+  projectDevelopers: {
+    type: Array,
+  },
 });
 
 projectSchema.pre("save", function (next) {

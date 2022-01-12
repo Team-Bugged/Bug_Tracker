@@ -84,38 +84,59 @@ const getInfo = (req, res) => {
   }
 };
 
+const getProjectsForAUser = (req, res) => {
+  const userID = helper.getUserId(req);
+
+  Project.find(
+    {
+      $or: [
+        { projectOwner: userID },
+        { projectDevelopers: { $in: [`${userID}`] } },
+      ],
+    },
+    (err, projects) => {
+      res.json(
+        projects.map((project) => {
+          return project._id;
+        })
+      );
+    }
+  );
+};
+
 const getProjectInfo = (req, res) => {
   let projectID = req.body.id;
   Project.findById(projectID, function (err, data) {
     try {
-      res.json({
-        _id: data._id,
-        projectTitle: data.projectTitle,
-        projectDescription: data.projectDescription,
-        projectStartDate: data.projectStartDate,
-        projectOwner: data.projectOwner,
-        projectStatus: data.projectStatus,
-        bugs: data.bugs,
-        projectDevelopers: data.projectDevelopers,
-      });
+      res.json(data);
     } catch (err) {
       return err;
     }
   });
 };
 
+const getBugsForAUser = (req, res) => {
+  const userID = helper.getUserId(req);
+
+  Bug.find(
+    {
+      $or: [{ createdBy: userID }, { assignedTo: { $in: [`${userID}`] } }],
+    },
+    (err, bug) => {
+      res.json(
+        bug.map((bug) => {
+          return bug._id;
+        })
+      );
+    }
+  );
+};
+
 const getBugInfo = (req, res) => {
   let bugID = req.body.id;
   Bug.findById(bugID, function (err, data) {
     try {
-      res.json({
-        _id: data._id,
-        bugTitle: data.bugTitle,
-        bugDescription: data.bugDescription,
-        bugDueDate: data.bugDueDate,
-        bugSeverity: data.bugSeverity,
-        assignedTo: data.assignedTo,
-      });
+      res.json(data);
     } catch (error) {
       return error;
     }
@@ -155,7 +176,10 @@ const addProject = (req, res) => {
 
 const addBug = (req, res) => {
   let projectID = req.body.projectID;
+  let userID = helper.getUserId(req);
+
   let newBug = Bug({
+    createdBy: userID,
     bugTitle: req.body.bugTitle,
     bugDescription: req.body.bugDescription,
     bugSeverity: req.body.bugSeverity,
@@ -250,4 +274,6 @@ module.exports = {
   getProjectInfo,
   getBugInfo,
   addDeveloper,
+  getProjectsForAUser,
+  getBugsForAUser,
 };

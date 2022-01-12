@@ -70,10 +70,56 @@ const getInfo = (req, res) => {
     req.headers.authorization.split(" ")[0] === "Bearer"
   ) {
     let userID = helper.getUserId(req);
-    res.json({ success: true, msg: userID });
+    User.findById(userID, function (err, data) {
+      res.json({
+        _id: data._id,
+        email: data.email,
+        userName: data.userName,
+        projects: data.projects,
+        bugs: data.bugs,
+      });
+    });
   } else {
     res.json({ success: false, msg: "No headers" });
   }
+};
+
+const getProjectInfo = (req, res) => {
+  let projectID = req.body.id;
+  Project.findById(projectID, function (err, data) {
+    try {
+      res.json({
+        _id: data._id,
+        projectTitle: data.projectTitle,
+        projectDescription: data.projectDescription,
+        projectStartDate: data.projectStartDate,
+        projectOwner: data.projectOwner,
+        projectStatus: data.projectStatus,
+        bugs: data.bugs,
+        projectDevelopers: data.projectDevelopers,
+      });
+    } catch (err) {
+      return err;
+    }
+  });
+};
+
+const getBugInfo = (req, res) => {
+  let bugID = req.body.id;
+  Bug.findById(bugID, function (err, data) {
+    try {
+      res.json({
+        _id: data._id,
+        bugTitle: data.bugTitle,
+        bugDescription: data.bugDescription,
+        bugDueDate: data.bugDueDate,
+        bugSeverity: data.bugSeverity,
+        assignedTo: data.assignedTo,
+      });
+    } catch (error) {
+      return error;
+    }
+  });
 };
 
 const addProject = (req, res) => {
@@ -201,5 +247,7 @@ module.exports = {
   addBug,
   getInfo,
   assignBug,
+  getProjectInfo,
+  getBugInfo,
   addDeveloper,
 };

@@ -1,6 +1,10 @@
 var mongoose = require("mongoose");
 var Schema = mongoose.Schema;
 var bugSchema = new Schema({
+  createdBy: {
+    type: String,
+    require: true,
+  },
   bugTitle: {
     type: String,
     require: true,
@@ -27,7 +31,7 @@ var bugSchema = new Schema({
   },
   assignedTo: {
     type: Array,
-  }
+  },
   // comments: {
   //     type: Array,
   // },

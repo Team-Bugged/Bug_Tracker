@@ -22,6 +22,9 @@ router.post("/login", actions.login);
 //@route GET /getinfo
 router.get("/getinfo", actions.getInfo);
 
+router.get("/getprojectinfo", actions.getProjectInfo);
+
+router.get("/getbuginfo", actions.getBugInfo);
 //@desc Adding new project
 //@route POST /addproject
 router.post("/addproject", actions.addProject);

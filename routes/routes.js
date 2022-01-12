@@ -35,4 +35,6 @@ router.post("/addbug", actions.addBug);
 
 router.post("/assignbug", actions.assignBug);
 
+router.post("/adddeveloper", actions.addDeveloper);
+
 module.exports = router;

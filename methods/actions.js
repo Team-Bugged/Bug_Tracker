@@ -182,31 +182,59 @@ const addBug = (req, res) => {
   });
 };
 
+const addDeveloper = (req, res) => {
+  let developer = req.body.developerID;
+  let projectID = req.body.projectID;
+
+  Project.findOneAndUpdate(
+    { _id: projectID },
+    { $addToSet: { projectDevelopers: developer } },
+    (err, project) => {
+      if (err) {
+        res.send(err);
+      } else {
+        res.json({ projectDetail: project });
+      }
+    }
+  );
+};
+
 const assignBug = (req, res) => {
   let bugID = req.body.bugID;
-  assignedTo = req.body.assignedTo;
-  let bd;
+  let assignedTo = req.body.assignedTo;
+  let projectID = req.body.projectID;
+
+  let bd, ud;
   Bug.findOneAndUpdate(
     { _id: bugID },
-    { $push: { assignedTo: assignedTo } },
+    { $addToSet: { assignedTo: assignedTo } },
     (err, bugs) => {
       if (err) {
-        // res.send(err);
-        bd = err;
+        res.send(err);
       } else {
-        // res.json({ bugDetail: bugs });
         bd = { bugDetail: bugs };
       }
     }
   );
   User.findOneAndUpdate(
     { _id: assignedTo },
-    { $push: { bugs: bugID } },
-    (err, users) => {
+    { $addToSet: { bugs: bugID } },
+    (err, user) => {
       if (err) {
         res.send(err);
       } else {
-        res.json({ userdetail: users, ...bd });
+        ud = { userDetail: user };
+      }
+    }
+  );
+  Project.findOneAndUpdate(
+    { _id: projectID },
+    { $addToSet: { projectDevelopers: assignedTo } },
+    (err, project) => {
+      if (err) {
+        res.send(err);
+      } else {
+        res.send({ projectDetail: project, ...ud, ...bd });
       }
     }
   );
@@ -221,4 +249,5 @@ module.exports = {
   assignBug,
   getProjectInfo,
   getBugInfo,
+  addDeveloper,
 };

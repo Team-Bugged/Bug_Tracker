@@ -2,19 +2,21 @@ var helper = require("./helper");
 var User = require("../models/user");
 var Project = require("../models/project");
 var Bug = require("../models/bug");
+const moment = require("moment");
 
 const signUp = (req, res) => {
-  if (!req.body.email || !req.body.password) {
+  if (!req.body.email || !req.body.password || !req.body.username) {
     res.json({ success: false, msg: "Enter all fields" });
   } else {
     var newUser = User({
-      userName: req.body.name,
+      name: req.body.name,
+      username: req.body.username,
       email: req.body.email,
       password: req.body.password,
     });
     User.findOne(
       {
-        email: req.body.email,
+        $or: [{ email: req.body.email }, { username: req.body.username }],
       },
       function (err, user) {
         if (err) throw err;
@@ -50,7 +52,7 @@ const login = (req, res) => {
       } else {
         user.comparePassword(req.body.password, function (err, isMatch) {
           if (isMatch && !err) {
-            token = helper.encodeToken(user._id);
+            token = helper.encodeToken(user._id, user.username);
             res.json({ success: true, token: token });
           } else {
             res.status(403).send({
@@ -69,15 +71,9 @@ const getInfo = (req, res) => {
     req.headers.authorization &&
     req.headers.authorization.split(" ")[0] === "Bearer"
   ) {
-    let userID = helper.getUserId(req);
+    let userID = helper.getUserId(req).id;
     User.findById(userID, function (err, data) {
-      res.json({
-        _id: data._id,
-        email: data.email,
-        userName: data.userName,
-        projects: data.projects,
-        bugs: data.bugs,
-      });
+      res.json(data);
     });
   } else {
     res.json({ success: false, msg: "No headers" });
@@ -85,7 +81,7 @@ const getInfo = (req, res) => {
 };
 
 const getProjectsForAUser = (req, res) => {
-  const userID = helper.getUserId(req);
+  const userID = helper.getUserId(req).username;
 
   Project.find(
     {
@@ -95,11 +91,7 @@ const getProjectsForAUser = (req, res) => {
       ],
     },
     (err, projects) => {
-      res.json(
-        projects.map((project) => {
-          return project._id;
-        })
-      );
+      res.json(projects);
     }
   );
 };
@@ -116,18 +108,14 @@ const getProjectInfo = (req, res) => {
 };
 
 const getBugsForAUser = (req, res) => {
-  const userID = helper.getUserId(req);
+  const userID = helper.getUserId(req).username;
 
   Bug.find(
     {
       $or: [{ createdBy: userID }, { assignedTo: { $in: [`${userID}`] } }],
     },
     (err, bug) => {
-      res.json(
-        bug.map((bug) => {
-          return bug._id;
-        })
-      );
+      res.json(bug);
     }
   );
 };
@@ -144,12 +132,12 @@ const getBugInfo = (req, res) => {
 };
 
 const addProject = (req, res) => {
-  let userID = helper.getUserId(req);
+  let userID = helper.getUserId(req).username;
 
   let newProject = Project({
     projectTitle: req.body.projectTitle,
     projectDescription: req.body.projectDescription,
-    projectStartDate: req.body.projectStartDate,
+    projectStartDate: moment().format("DD-MM-YYYY").toString(),
     projectOwner: userID,
     projectStatus: req.body.projectStatus,
   });
@@ -176,12 +164,13 @@ const addProject = (req, res) => {
 
 const addBug = (req, res) => {
   let projectID = req.body.projectID;
-  let userID = helper.getUserId(req);
+  let userID = helper.getUserId(req).username;
 
   let newBug = Bug({
     createdBy: userID,
     bugTitle: req.body.bugTitle,
     bugDescription: req.body.bugDescription,
+    bugStatus: req.body.bugStatus,
     bugSeverity: req.body.bugSeverity,
     bugDueDate: req.body.bugDueDate,
     // comments: req.body.comments,
@@ -189,7 +178,7 @@ const addBug = (req, res) => {
   newBug.save(function (err, savedBug) {
     if (err) {
       console.log(err);
-      res.json({ success: false, msg: "Failed to save" });
+      res.json({ success: false, msg: err });
     } else {
       Project.findOneAndUpdate(
         { _id: projectID },
@@ -207,12 +196,13 @@ const addBug = (req, res) => {
 };
 
 const addDeveloper = (req, res) => {
-  let developer = req.body.developerID;
+  let developer = req.body.developer;
   let projectID = req.body.projectID;
 
   Project.findOneAndUpdate(
     { _id: projectID },
     { $addToSet: { projectDevelopers: developer } },
+    { returnNewDocument: true },
     (err, project) => {
       if (err) {
         res.send(err);
@@ -232,6 +222,7 @@ const assignBug = (req, res) => {
   Bug.findOneAndUpdate(
     { _id: bugID },
     { $addToSet: { assignedTo: assignedTo } },
+    { returnNewDocument: true },
     (err, bugs) => {
       if (err) {
         res.send(err);
@@ -241,8 +232,9 @@ const assignBug = (req, res) => {
     }
   );
   User.findOneAndUpdate(
-    { _id: assignedTo },
+    { username: assignedTo },
     { $addToSet: { bugs: bugID } },
+    { returnNewDocument: true },
     (err, user) => {
       if (err) {
         res.send(err);
@@ -254,6 +246,7 @@ const assignBug = (req, res) => {
   Project.findOneAndUpdate(
     { _id: projectID },
     { $addToSet: { projectDevelopers: assignedTo } },
+    { returnNewDocument: true },
     (err, project) => {
       if (err) {
         res.send(err);

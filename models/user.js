@@ -10,7 +10,11 @@ var userSchema = new Schema({
     type: String,
     require: true,
   },
-  userName: {
+  name: {
+    type: String,
+    require: true,
+  },
+  username: {
     type: String,
     require: true,
   },
@@ -19,7 +23,7 @@ var userSchema = new Schema({
   },
   bugs: {
     type: Array,
-  }
+  },
 });
 
 userSchema.pre("save", function (next) {

@@ -21,12 +21,12 @@ var bugSchema = new Schema({
     type: String,
     require: true,
   },
-  bugPriority: {
-    type: String,
-    require: true,
-  },
+  // bugPriority: {
+  //   type: String,
+  //   require: true,
+  // },
   bugDueDate: {
-    type: Date,
+    type: String,
     require: true,
   },
   assignedTo: {

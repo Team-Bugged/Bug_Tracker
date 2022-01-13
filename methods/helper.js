@@ -6,7 +6,7 @@ const getUserId = (req) => {
   return jwt.decode(token, config.secret);
 };
 
-const encodeToken = (id) => {
-  return jwt.encode(id, config.secret);
+const encodeToken = (id, username) => {
+  return jwt.encode({ id, username }, config.secret);
 };
 module.exports = { getUserId, encodeToken };

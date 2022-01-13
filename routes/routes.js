@@ -34,9 +34,13 @@ router.get("/getbuginfo", actions.getBugInfo);
 //@route POST /addproject
 router.post("/addproject", actions.addProject);
 
+router.post("/editproject", actions.editProject);
+
 //@desc Adding new bug
 //@route POST /addbug
 router.post("/addbug", actions.addBug);
+
+router.post("/editbug", actions.editBug);
 
 router.post("/assignbug", actions.assignBug);
 

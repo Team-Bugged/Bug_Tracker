@@ -10,7 +10,7 @@ var projectSchema = new Schema({
     require: true,
   },
   projectStartDate: {
-    type: Date,
+    type: String,
     require: true,
   },
   projectOwner: {

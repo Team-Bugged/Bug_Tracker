@@ -48,4 +48,8 @@ router.post("/adddeveloper", actions.addDeveloper);
 
 router.put('/editProject',actions.editProject);
 
+router.put('/editBug',actions.editBug);
+
+router.delete('/deleteProject',actions.editBug);
+
 module.exports = router;

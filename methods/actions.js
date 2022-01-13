@@ -269,6 +269,7 @@ const editProject=(req, res) => {
     {$set:{projectTitle:req.body.projectTitle, projectDescription:req.body.projectDescription,
     projectStartDate:req.body.projectStartDate,
     projectStatus:req.body.projectStatus}},
+    { returnNewDocument: true },
     (err, project) => {
       if (err) {
         res.send(err);
@@ -288,6 +289,47 @@ const editProject=(req, res) => {
 
 };
 
+const editBug=(req, res) => {
+
+  let bugID = req.body.bugID;
+  
+
+  let bd, ud;
+  Bug.findOneAndUpdate(
+    { _id: bugID },
+    { $set: {bugTitle: req.body.bugTitle,
+      bugDescription: req.body.bugDescription,
+      bugStatus: req.body.bugStatus,
+      bugSeverity: req.body.bugSeverity,
+      bugDueDate: req.body.bugDueDate } },
+    { returnNewDocument: true },
+    (err, bugs) => {
+      if (err) {
+        res.send(err);
+      } else {
+        bd = { bugDetail: bugs };
+      }
+    }
+  );
+
+};
+
+const deleteProject=(req,res)=>{
+
+  let projectID = req.body.id;
+  const deleted= Project.findByIdAndDelete(projectID);
+
+  Project.findOneAndDelete({_id:projectID}, err =>{
+    if(err) return res.json({succes:false, error:err})
+    return res.json({succes:true})
+  });
+
+};  
+
+
+
+
+
 module.exports = {
   signUp,
   login,
@@ -301,4 +343,6 @@ module.exports = {
   getProjectsForAUser,
   getBugsForAUser,
   editProject,
+  editBug,
+  deleteProject
 };

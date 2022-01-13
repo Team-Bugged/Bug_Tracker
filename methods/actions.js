@@ -264,6 +264,37 @@ const assignBug = (req, res) => {
   );
 };
 
+const editProject=(req, res) => {
+
+  
+
+  let projectID = req.body.id;
+
+  
+  Project.findOneAndUpdate(
+    { _id: projectID },
+    {$set:{projectTitle:req.body.projectTitle, projectDescription:req.body.projectDescription,
+    projectStartDate:req.body.projectStartDate,
+    projectStatus:req.body.projectStatus}},
+    (err, project) => {
+      if (err) {
+        res.send(err);
+      } else {
+        res.json({ projectDetail: project });
+      }
+    }
+  );
+  // Project.findById(projectID, function (err, data) {
+  //   try {
+  //     res.json(data);
+  //   } catch (err) {
+  //     return err;
+  //   }
+  // });
+
+
+};
+
 module.exports = {
   signUp,
   login,
@@ -276,4 +307,5 @@ module.exports = {
   addDeveloper,
   getProjectsForAUser,
   getBugsForAUser,
+  editProject,
 };

@@ -42,4 +42,6 @@ router.post("/assignbug", actions.assignBug);
 
 router.post("/adddeveloper", actions.addDeveloper);
 
+router.put('/editProject',actions.editProject);
+
 module.exports = router;

@@ -4,6 +4,7 @@ var Project = require("../models/project");
 var Bug = require("../models/bug");
 const moment = require("moment");
 const bug = require("../models/bug");
+const project = require("../models/project");
 
 const signUp = (req, res) => {
   if (!req.body.email || !req.body.password || !req.body.username) {
@@ -98,18 +99,18 @@ const getProjectsForAUser = (req, res) => {
 };
 
 const getProjectInfo = (req, res) => {
-  let projectID = req.body.id;
+  let projectID = req.param("projectID");
   Project.findById(projectID, function (err, data) {
-    try {
+    if (err) {
+      res.json(err);
+    } else {
       res.json(data);
-    } catch (err) {
-      return err;
     }
   });
 };
 
 const getBugsForAUser = (req, res) => {
-  const userID = helper.getUserId(req);
+  const userID = helper.getUserId(req).username;
 
   Bug.find(
     {
@@ -136,14 +137,14 @@ const getBugInfo = (req, res) => {
 };
 
 const addProject = (req, res) => {
-  let userID = helper.getUserId(req).id;
+  let userName = helper.getUserId(req).username;
 
   let newProject = Project({
     projectTitle: req.body.projectTitle,
     projectDescription: req.body.projectDescription,
     projectStartDate: moment().format("DD-MM-YYYY").toString(),
-    projectOwner: userID,
-    projectStatus: req.body.projectStatus,
+    projectOwner: userName,
+    projectStatus: "Open",
   });
 
   newProject.save(function (err, savedProject) {

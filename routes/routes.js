@@ -46,10 +46,12 @@ router.post("/assignbug", actions.assignBug);
 
 router.post("/adddeveloper", actions.addDeveloper);
 
-router.put('/editProject',actions.editProject);
+router.put("/editProject", actions.editProject);
 
-router.put('/editBug',actions.editBug);
+router.put("/editBug", actions.editBug);
 
-router.delete('/deleteProject',actions.editBug);
+router.delete("/deleteProject", actions.deleteProject);
+
+router.delete("/deleteBug", actions.deleteBug);
 
 module.exports = router;

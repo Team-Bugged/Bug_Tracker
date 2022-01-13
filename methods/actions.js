@@ -3,6 +3,7 @@ var User = require("../models/user");
 var Project = require("../models/project");
 var Bug = require("../models/bug");
 const moment = require("moment");
+const bug = require("../models/bug");
 
 const signUp = (req, res) => {
   if (!req.body.email || !req.body.password || !req.body.username) {
@@ -108,11 +109,14 @@ const getProjectInfo = (req, res) => {
 };
 
 const getBugsForAUser = (req, res) => {
-  const userID = helper.getUserId(req).username;
+  const userID = helper.getUserId(req);
 
   Bug.find(
     {
-      $or: [{ createdBy: userID }, { assignedTo: { $in: [`${userID}`] } }],
+      $or: [
+        { createdBy: userID },
+        { assignedTo: { $in: [`${userID.username}`] } },
+      ],
     },
     (err, bug) => {
       res.json(bug);
@@ -132,7 +136,7 @@ const getBugInfo = (req, res) => {
 };
 
 const addProject = (req, res) => {
-  let userID = helper.getUserId(req).username;
+  let userID = helper.getUserId(req).id;
 
   let newProject = Project({
     projectTitle: req.body.projectTitle,
@@ -257,18 +261,19 @@ const assignBug = (req, res) => {
   );
 };
 
-const editProject=(req, res) => {
-
-  
-
+const editProject = (req, res) => {
   let projectID = req.body.id;
 
-  
   Project.findOneAndUpdate(
     { _id: projectID },
-    {$set:{projectTitle:req.body.projectTitle, projectDescription:req.body.projectDescription,
-    projectStartDate:req.body.projectStartDate,
-    projectStatus:req.body.projectStatus}},
+    {
+      $set: {
+        projectTitle: req.body.projectTitle,
+        projectDescription: req.body.projectDescription,
+        projectStartDate: req.body.projectStartDate,
+        projectStatus: req.body.projectStatus,
+      },
+    },
     { returnNewDocument: true },
     (err, project) => {
       if (err) {
@@ -285,23 +290,23 @@ const editProject=(req, res) => {
   //     return err;
   //   }
   // });
-
-
 };
 
-const editBug=(req, res) => {
-
+const editBug = (req, res) => {
   let bugID = req.body.bugID;
-  
 
   let bd, ud;
   Bug.findOneAndUpdate(
     { _id: bugID },
-    { $set: {bugTitle: req.body.bugTitle,
-      bugDescription: req.body.bugDescription,
-      bugStatus: req.body.bugStatus,
-      bugSeverity: req.body.bugSeverity,
-      bugDueDate: req.body.bugDueDate } },
+    {
+      $set: {
+        bugTitle: req.body.bugTitle,
+        bugDescription: req.body.bugDescription,
+        bugStatus: req.body.bugStatus,
+        bugSeverity: req.body.bugSeverity,
+        bugDueDate: req.body.bugDueDate,
+      },
+    },
     { returnNewDocument: true },
     (err, bugs) => {
       if (err) {
@@ -311,24 +316,71 @@ const editBug=(req, res) => {
       }
     }
   );
-
 };
 
-const deleteProject=(req,res)=>{
+const deleteProject = (req, res) => {
+  let projectID = req.body.projectID;
 
-  let projectID = req.body.id;
-  const deleted= Project.findByIdAndDelete(projectID);
+  Project.findOne({ _id: projectID }, (err, project) => {
+    if (err) {
+      return res.json(err);
+    } else {
+      if (project.projectOwner != helper.getUserId(req).username) {
+        res.status(403);
+        res.json({ msg: "Not Authorized" });
+      }
+      projects.bugs.map((bug) => {
+        Bug.deleteOne({ _id: bug._id });
+      });
+    }
 
-  Project.findOneAndDelete({_id:projectID}, err =>{
-    if(err) return res.json({succes:false, error:err})
-    return res.json({succes:true})
+    User.updateMany(
+      { $in: { projects: { projectID } } },
+      { $pull: { projects: { projectID } } },
+      (err) => {
+        if (err) return res.json(err);
+      }
+    );
   });
 
-};  
+  Project.findOneAndDelete({ _id: projectID }, (err) => {
+    if (err) return res.json({ succes: false, error: err });
+    else {
+      res.send({ msg: "ok" });
+    }
+    // return res.json({succes:true})
+  });
+};
 
+const deleteBug = (req, res) => {
+  let bugID = req.body.id;
+  let projectID = req.body.projectID;
 
+  Bug.findOneAndDelete({ _id: bugID }, (err, project) => {
+    if (err) return res.json({ succes: false, error: err });
+    // return res.json({succes:true})
+  });
 
+  Project.updateOne(
+    { _id: projectID },
+    { $pull: { bugs: { bugID } } },
+    (err) => {
+      if (err) {
+        res.json(err);
+      }
+    }
+  );
 
+  User.updateMany(
+    { $in: { bugs: { bugID } } },
+    { $pull: { bugs: { bugID } } },
+    (err) => {
+      if (err) {
+        res.json(err);
+      }
+    }
+  );
+};
 
 module.exports = {
   signUp,
@@ -344,5 +396,6 @@ module.exports = {
   getBugsForAUser,
   editProject,
   editBug,
-  deleteProject
+  deleteProject,
+  deleteBug,
 };

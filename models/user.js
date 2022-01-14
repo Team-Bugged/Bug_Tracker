@@ -18,12 +18,6 @@ var userSchema = new Schema({
     type: String,
     require: true,
   },
-  projects: {
-    type: Array,
-  },
-  bugs: {
-    type: Array,
-  },
 });
 
 userSchema.pre("save", function (next) {

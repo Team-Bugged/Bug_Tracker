@@ -162,6 +162,7 @@ const addBug = (req, res) => {
   let userName = helper.getUserId(req).username;
 
   let newBug = Bug({
+    projectID: projectID,
     createdBy: userName,
     bugTitle: req.body.bugTitle,
     bugDescription: req.body.bugDescription,
@@ -310,15 +311,13 @@ const deleteProject = (req, res) => {
 
 const deleteBug = (req, res) => {
   let bugID = req.body.bugID;
-  let projectID = req.body.projectID;
 
-  Bug.findOneAndDelete({ _id: bugID }, (err, project) => {
+  Bug.findOneAndDelete({ _id: bugID }, (err, bug) => {
     if (err) return res.json({ succes: false, error: err });
-    // return res.json({succes:true})
   });
 
-  Project.updateOne(
-    { _id: projectID },
+  Project.updateMany(
+    { $in: { bugs: bugID } },
     { $pull: { bugs: bugID } },
     (err, project) => {
       if (err) {
@@ -326,6 +325,17 @@ const deleteBug = (req, res) => {
       }
     }
   );
+};
+
+const getProjectIdForABug = (req, res) => {
+  let bugID = req.body.bugID;
+
+  Bug.findOne({ _id: bugID }, (err, bug) => {
+    if (err) return res.json({ succes: false, error: err });
+    else {
+      res.send(bug.projectID);
+    }
+  });
 };
 
 module.exports = {
@@ -344,4 +354,5 @@ module.exports = {
   editBug,
   deleteProject,
   deleteBug,
+  getProjectIdForABug,
 };

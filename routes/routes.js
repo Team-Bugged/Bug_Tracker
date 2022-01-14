@@ -54,4 +54,6 @@ router.post("/deleteProject", actions.deleteProject);
 
 router.post("/deleteBug", actions.deleteBug);
 
+router.get("/getProjectIdForABug", actions.getProjectIdForABug);
+
 module.exports = router;

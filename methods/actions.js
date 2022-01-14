@@ -126,7 +126,7 @@ const getBugsForAUser = (req, res) => {
 };
 
 const getBugInfo = (req, res) => {
-  let bugID = req.body.id;
+  let bugID = req.param("id");
   Bug.findById(bugID, function (err, data) {
     try {
       res.json(data);

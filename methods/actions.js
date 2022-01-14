@@ -293,24 +293,18 @@ const editBug = (req, res) => {
 
 const deleteProject = (req, res) => {
   let projectID = req.body.projectID;
+  let bugs = req.body.bugs;
 
-  Project.findOne({ _id: projectID }, (err, project) => {
+  Project.findOneAndDelete({ _id: projectID }, (err, project) => {
     if (err) {
-      return res.json(err);
-    } else {
-      console.log(project);
-      project.bugs.map((bug) => {
-        Bug.deleteOne({ _id: bug._id });
-      });
+      console.log(err);
     }
   });
 
-  Project.findOneAndDelete({ _id: projectID }, (err) => {
-    if (err) return res.json({ succes: false, error: err });
-    else {
-      res.send({ msg: "ok" });
-    }
-    // return res.json({succes:true})
+  bugs.map((bugID) => {
+    Bug.findOneAndDelete({ _id: bugID }, (err) => {
+      console.log(err);
+    });
   });
 };
 

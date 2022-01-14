@@ -60,4 +60,6 @@ router.get("/getProjectIdForABug", actions.getProjectIdForABug);
 
 router.post("/closebug", actions.closeBug);
 
+router.post("/closeproject", actions.closeProject);
+
 module.exports = router;

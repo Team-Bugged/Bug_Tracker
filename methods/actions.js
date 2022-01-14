@@ -110,14 +110,11 @@ const getProjectInfo = (req, res) => {
 };
 
 const getBugsForAUser = (req, res) => {
-  const userID = helper.getUserId(req).username;
+  const username = helper.getUserId(req).username;
 
   Bug.find(
     {
-      $or: [
-        { createdBy: userID },
-        { assignedTo: { $in: [`${userID.username}`] } },
-      ],
+      $or: [{ createdBy: username }, { assignedTo: { $in: [`${username}`] } }],
     },
     (err, bug) => {
       res.json(bug);
@@ -279,7 +276,6 @@ const editBug = (req, res) => {
       $set: {
         bugTitle: req.body.bugTitle,
         bugDescription: req.body.bugDescription,
-        bugStatus: req.body.bugStatus,
         bugSeverity: req.body.bugSeverity,
         bugDueDate: req.body.bugDueDate,
       },
@@ -352,6 +348,21 @@ const closeBug = (req, res) => {
   });
 };
 
+const closeProject = (req, res) => {
+  let projectID = req.body.projectID;
+
+  Project.findOneAndUpdate(
+    { _id: projectID },
+    { projectStatus: "Closed" },
+    (err, project) => {
+      if (err) return res.json({ succes: false, error: err });
+      else {
+        res.send(project);
+      }
+    }
+  );
+};
+
 module.exports = {
   signUp,
   login,
@@ -371,4 +382,5 @@ module.exports = {
   getProjectIdForABug,
   closeBug,
   getBugsForAProject,
+  closeProject,
 };

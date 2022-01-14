@@ -22,7 +22,7 @@ var projectSchema = new Schema({
     require: true,
   },
   bugs: {
-    type: Array,
+    type: [String],
   },
   projectDevelopers: {
     type: Array,

@@ -126,7 +126,7 @@ const getBugsForAUser = (req, res) => {
 };
 
 const getBugInfo = (req, res) => {
-  let bugID = req.body.id;
+  let bugID = req.param("bugID");
   Bug.findById(bugID, function (err, data) {
     try {
       res.json(data);
@@ -138,7 +138,7 @@ const getBugInfo = (req, res) => {
 
 const addProject = (req, res) => {
   let userName = helper.getUserId(req).username;
-  let userID = helper.getUserId(req).id;
+
   let newProject = Project({
     projectTitle: req.body.projectTitle,
     projectDescription: req.body.projectDescription,
@@ -152,17 +152,7 @@ const addProject = (req, res) => {
       console.log(err);
       res.json({ success: false, msg: "Failed to save" });
     } else {
-      User.findOneAndUpdate(
-        { _id: userID },
-        { $push: { projects: savedProject._id } },
-        (err, user) => {
-          if (err) {
-            res.send(err);
-          } else {
-            res.json({ projectDetail: savedProject, userDetail: user });
-          }
-        }
-      );
+      res.send(savedProject);
     }
   });
 };
@@ -170,7 +160,6 @@ const addProject = (req, res) => {
 const addBug = (req, res) => {
   let projectID = req.body.projectID;
   let userName = helper.getUserId(req).username;
-  let userID = helper.getUserId(req).id;
 
   let newBug = Bug({
     createdBy: userName,
@@ -196,13 +185,6 @@ const addBug = (req, res) => {
           } else {
             pd = project;
           }
-        }
-      );
-      User.findOneAndUpdate(
-        { _id: userID },
-        { $addToSet: { bugs: savedBug._id } },
-        (err, savedUser) => {
-          res.json({ savedBug, pd, savedUser });
         }
       );
     }
@@ -242,18 +224,6 @@ const assignBug = (req, res) => {
         res.send(err);
       } else {
         bd = { bugDetail: bugs };
-      }
-    }
-  );
-  User.findOneAndUpdate(
-    { username: assignedTo },
-    { $addToSet: { bugs: bugID } },
-    { returnNewDocument: true },
-    (err, user) => {
-      if (err) {
-        res.send(err);
-      } else {
-        ud = { userDetail: user };
       }
     }
   );
@@ -323,7 +293,7 @@ const editBug = (req, res) => {
 
 const deleteProject = (req, res) => {
   let projectID = req.body.projectID;
-  let userName = helper.getUserId(req).username;
+
   Project.findOne({ _id: projectID }, (err, project) => {
     if (err) {
       return res.json(err);
@@ -333,14 +303,6 @@ const deleteProject = (req, res) => {
         Bug.deleteOne({ _id: bug._id });
       });
     }
-
-    User.updateMany(
-      { $in: { project: { projectID } } },
-      { $pull: { project: { projectID } } },
-      (err) => {
-        if (err) return res.json(err);
-      }
-    );
   });
 
   Project.findOneAndDelete({ _id: projectID }, (err) => {
@@ -363,26 +325,12 @@ const deleteBug = (req, res) => {
 
   Project.updateOne(
     { _id: projectID },
-    { $pull: { bugs: { bugID } } },
-    (err) => {
+    { $pull: { bugs: bugID } },
+    (err, project) => {
       if (err) {
         res.json(err);
       }
-    },
-    { returnNewDocument: true }
-  );
-
-  User.updateMany(
-    { $in: { bugs: { bugID } } },
-    { $pull: { bugs: { bugID } } },
-    (err) => {
-      if (err) {
-        res.json(err);
-      } else {
-        res.send({ msg: "ok" });
-      }
-    },
-    { returnNewDocument: true }
+    }
   );
 };
 

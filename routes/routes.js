@@ -50,8 +50,8 @@ router.put("/editProject", actions.editProject);
 
 router.put("/editBug", actions.editBug);
 
-router.delete("/deleteProject", actions.deleteProject);
+router.post("/deleteProject", actions.deleteProject);
 
-router.delete("/deleteBug", actions.deleteBug);
+router.post("/deleteBug", actions.deleteBug);
 
 module.exports = router;

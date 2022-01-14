@@ -48,14 +48,18 @@ router.post("/assignbug", actions.assignBug);
 
 router.post("/adddeveloper", actions.addDeveloper);
 
-router.put("/editProject", actions.editProject);
+router.post("/editProject", actions.editProject);
 
-router.put("/editBug", actions.editBug);
+router.post("/editBug", actions.editBug);
 
 router.post("/deleteProject", actions.deleteProject);
 
 router.post("/deleteBug", actions.deleteBug);
 
 router.get("/getProjectIdForABug", actions.getProjectIdForABug);
+
+router.post("/closebug", actions.closeBug);
+
+router.post("/closeproject", actions.closeProject);
 
 module.exports = router;

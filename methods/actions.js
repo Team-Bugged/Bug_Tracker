@@ -110,14 +110,11 @@ const getProjectInfo = (req, res) => {
 };
 
 const getBugsForAUser = (req, res) => {
-  const userID = helper.getUserId(req).username;
+  const username = helper.getUserId(req).username;
 
   Bug.find(
     {
-      $or: [
-        { createdBy: userID },
-        { assignedTo: { $in: [`${userID.username}`] } },
-      ],
+      $or: [{ createdBy: username }, { assignedTo: { $in: [`${username}`] } }],
     },
     (err, bug) => {
       res.json(bug);
@@ -220,7 +217,6 @@ const addDeveloper = (req, res) => {
 const assignBug = (req, res) => {
   let bugID = req.body.bugID;
   let assignedTo = req.body.assignedTo;
-  let projectID = req.body.projectID;
 
   let bd, ud;
   Bug.findOneAndUpdate(
@@ -231,35 +227,33 @@ const assignBug = (req, res) => {
       if (err) {
         res.send(err);
       } else {
-        bd = { bugDetail: bugs };
-      }
-    }
-  );
-  Project.findOneAndUpdate(
-    { _id: projectID },
-    { $addToSet: { projectDevelopers: assignedTo } },
-    { returnNewDocument: true },
-    (err, project) => {
-      if (err) {
-        res.send(err);
-      } else {
-        res.send({ projectDetail: project, ...ud, ...bd });
+        Project.findOneAndUpdate(
+          { _id: bugs.projectID },
+          { $addToSet: { projectDevelopers: assignedTo } },
+          { returnNewDocument: true },
+          (err, project) => {
+            if (err) {
+              res.send(err);
+            } else {
+              res.send({ projectDetail: project, ...ud, ...bd });
+            }
+          }
+        );
       }
     }
   );
 };
 
 const editProject = (req, res) => {
-  let projectID = req.body.id;
+  let projectID = req.body.projectID;
 
+  console.log(projectID, req.body.projectTitle, req.body.projectDescription);
   Project.findOneAndUpdate(
     { _id: projectID },
     {
       $set: {
         projectTitle: req.body.projectTitle,
         projectDescription: req.body.projectDescription,
-        projectStartDate: req.body.projectStartDate,
-        projectStatus: req.body.projectStatus,
       },
     },
     { returnNewDocument: true },
@@ -276,14 +270,12 @@ const editProject = (req, res) => {
 const editBug = (req, res) => {
   let bugID = req.body.bugID;
 
-  let bd, ud;
   Bug.findOneAndUpdate(
     { _id: bugID },
     {
       $set: {
         bugTitle: req.body.bugTitle,
         bugDescription: req.body.bugDescription,
-        bugStatus: req.body.bugStatus,
         bugSeverity: req.body.bugSeverity,
         bugDueDate: req.body.bugDueDate,
       },
@@ -345,6 +337,32 @@ const getProjectIdForABug = (req, res) => {
   });
 };
 
+const closeBug = (req, res) => {
+  let bugID = req.body.bugID;
+
+  Bug.findOneAndUpdate({ _id: bugID }, { bugStatus: "Closed" }, (err, bug) => {
+    if (err) return res.json({ succes: false, error: err });
+    else {
+      res.send(bug.projectID);
+    }
+  });
+};
+
+const closeProject = (req, res) => {
+  let projectID = req.body.projectID;
+
+  Project.findOneAndUpdate(
+    { _id: projectID },
+    { projectStatus: "Closed" },
+    (err, project) => {
+      if (err) return res.json({ succes: false, error: err });
+      else {
+        res.send(project);
+      }
+    }
+  );
+};
+
 module.exports = {
   signUp,
   login,
@@ -362,5 +380,7 @@ module.exports = {
   deleteProject,
   deleteBug,
   getProjectIdForABug,
+  closeBug,
   getBugsForAProject,
+  closeProject,
 };

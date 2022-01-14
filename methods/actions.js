@@ -125,6 +125,13 @@ const getBugsForAUser = (req, res) => {
   );
 };
 
+const getBugsForAProject = (req, res) => {
+  const projectID = req.param("projectID");
+  Bug.find({ projectID: projectID }, (err, bug) => {
+    res.json(bug);
+  });
+};
+
 const getBugInfo = (req, res) => {
   let bugID = req.param("id");
   Bug.findById(bugID, function (err, data) {
@@ -243,7 +250,7 @@ const assignBug = (req, res) => {
 const editProject = (req, res) => {
   let projectID = req.body.projectID;
 
-  console.log(projectID, req.body.projectTitle, req.body.projectDescription );
+  console.log(projectID, req.body.projectTitle, req.body.projectDescription);
   Project.findOneAndUpdate(
     { _id: projectID },
     {
@@ -363,4 +370,5 @@ module.exports = {
   deleteBug,
   getProjectIdForABug,
   closeBug,
+  getBugsForAProject,
 };

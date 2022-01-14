@@ -28,6 +28,8 @@ router.get("/getprojectsforauser", actions.getProjectsForAUser);
 
 router.get("/getbugsForaUser", actions.getBugsForAUser);
 
+router.get("/getbugsforaproject", actions.getBugsForAProject);
+
 router.get("/getbuginfo", actions.getBugInfo);
 
 //@desc Adding new project
